@@ -60,6 +60,11 @@ public class KafkaDemoApplication {
 		return new NewTopic(topicName, 3, (short) 1);
 	}
 
+	@Bean
+	public NewTopic adviceReadTopic() {
+		return new NewTopic("advice-topic-read", 3, (short) 1);
+	}
+
 
 	// Consumer configuration
 
@@ -94,6 +99,7 @@ public class KafkaDemoApplication {
 		ConcurrentKafkaListenerContainerFactory<String, Object> factory =
 				new ConcurrentKafkaListenerContainerFactory<>();
 		factory.setConsumerFactory(consumerFactory());
+		factory.setReplyTemplate(kafkaTemplate());
 
 		return factory;
 	}

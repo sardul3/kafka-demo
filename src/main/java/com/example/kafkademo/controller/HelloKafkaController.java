@@ -1,6 +1,7 @@
 package com.example.kafkademo.controller;
 
 import com.example.kafkademo.model.PracticalAdvice;
+import com.example.kafkademo.workflow.model.ImageWorkflow;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.slf4j.LoggerFactory;
@@ -9,6 +10,8 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.messaging.handler.annotation.Headers;
 import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.messaging.handler.annotation.SendTo;
+import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -52,10 +55,18 @@ public class HelloKafkaController {
 
     @KafkaListener(topics = "advice-topic", clientIdPrefix = "json",
             containerFactory = "kafkaListenerContainerFactory")
-    public void listenAsObject(ConsumerRecord<String, PracticalAdvice> cr,
+    @SendTo("advice-topic-read")
+    public PracticalAdvice listenAsObject(ConsumerRecord<String, PracticalAdvice> cr,
                                @Payload PracticalAdvice payload) {
         log.info("Logger 1 [JSON] received key"  + cr.key());
         latch.countDown();
+        ImageWorkflow workflow = new ImageWorkflow();
+        workflow.init();
+        log.info("WORKFLOW STATE" + workflow.getState()) ;
+        workflow.promoteState();
+        log.info("WORKFLOW STATE" + workflow.getState()) ;
+
+        return payload;
     }
 
     @KafkaListener(topics = "advice-topic", clientIdPrefix = "string",
